@@ -79,17 +79,18 @@ class GameWindow(pyglet.window.Window):
         # update player
         self.update_player(dt)
 
-        # update player projectiles
+        # update player projectiles and remove projectiles out of bounds
         inbound_projectiles = []
         for p in self.player.projectiles:
             p.update(dt)
             if p.x < WIDTH:
                 inbound_projectiles.append(p)
+            else:
+                pass
+                # todo - check if this is necessary. it does not appear to be
+                # p.batch = None
 
         self.player.projectiles = inbound_projectiles
-
-
-
 
     def update_player(self, dt):
         # update motion
@@ -129,7 +130,6 @@ class GameWindow(pyglet.window.Window):
             )
             new_projectile.velocity_x = SPEED_PLASMA
             self.player.projectiles.append(new_projectile)
-
 
 
 if __name__ == "__main__":
