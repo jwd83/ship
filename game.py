@@ -1,14 +1,17 @@
 import pyglet
 from pyglet.window import key
-
+from projectile import Projectile
 from polys import *
 
 FRAME_RATE = 60
 WIDTH = 1280
 HEIGHT = 720
-SHIP_SPEED = 500
+SPEED_SHIP = 170
+SPEED_PLASMA = 400
+PLASMA_CD = 0.15
 
 main_batch = pyglet.graphics.Batch()
+
 
 class GameWindow(pyglet.window.Window):
     def __init__(self, *args, **kwargs):
@@ -34,26 +37,29 @@ class GameWindow(pyglet.window.Window):
         self.debug_enable = True
 
         # setup player
-        player_image = pyglet.image.load('astrominer.png')
-        self.player = pyglet.sprite.Sprite(player_image, x=100, y=HEIGHT // 2, batch=main_batch)
+        self.image_player = pyglet.image.load('van.png')
+        self.image_plasma = pyglet.image.load('plasma.png')
+
+        self.player = pyglet.sprite.Sprite(self.image_player, x=100, y=HEIGHT // 2, batch=main_batch)
         self.player.vx = 0
         self.player.vy = 0
         self.player.rect = Poly(0, 0)
         self.player.rect.add_point(0, 0)
-        self.player.rect.add_point(0, 0)
-        self.player.rect.add_point(0, 0)
-        self.player.rect.add_point(0, 0)
+        self.player.rect.add_point(0, self.player.height)
+        self.player.rect.add_point(self.player.width, self.player.height)
+        self.player.rect.add_point(self.player.width, 0)
         self.player.rect.move(self.player.x, self.player.y)
+        self.player.cooldown_plasma = PLASMA_CD
+        self.player.projectiles = []
 
     def on_draw(self):
         frame_batch = pyglet.graphics.Batch()
-
-        self.player.rect.move(self.player.x, self.player.y)
 
         self.clear()
 
         # draw the debugging string if requested
         if self.debug_enable:
+            self.debug_str = f"Projectiles: {len(self.player.projectiles)}"
             self.label_debug.text = self.debug_str
             # self.label_debug.batch = batch
 
@@ -70,8 +76,20 @@ class GameWindow(pyglet.window.Window):
         self.debug_str = ""
 
     def update(self, dt):
-        # handle left/right movement
+        # update player
         self.update_player(dt)
+
+        # update player projectiles
+        inbound_projectiles = []
+        for p in self.player.projectiles:
+            p.update(dt)
+            if p.x < WIDTH:
+                inbound_projectiles.append(p)
+
+        self.player.projectiles = inbound_projectiles
+
+
+
 
     def update_player(self, dt):
         # update motion
@@ -95,11 +113,26 @@ class GameWindow(pyglet.window.Window):
             else:
                 self.player.vy = 0
 
-        self.player.x += self.player.vx * dt * SHIP_SPEED
-        self.player.y += self.player.vy * dt * SHIP_SPEED
+        self.player.x += self.player.vx * dt * SPEED_SHIP
+        self.player.y += self.player.vy * dt * SPEED_SHIP
+        self.player.rect.move(self.player.x, self.player.y)
+
+        # update shooting
+        self.player.cooldown_plasma -= dt
+        if self.player.cooldown_plasma <= 0 and self.keys[key.SPACE]:
+            self.player.cooldown_plasma = PLASMA_CD
+            new_projectile = Projectile(
+                self.image_plasma,
+                x=self.player.x + self.player.width,
+                y=self.player.y + self.player.height // 2,
+                batch=main_batch
+            )
+            new_projectile.velocity_x = SPEED_PLASMA
+            self.player.projectiles.append(new_projectile)
+
 
 
 if __name__ == "__main__":
-    window = GameWindow(1280, 720, "GR")
+    window = GameWindow(1280, 720, "Van Alien")
     pyglet.clock.schedule_interval(window.update, 1.0 / FRAME_RATE)
     pyglet.app.run()
