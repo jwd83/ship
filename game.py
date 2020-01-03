@@ -6,11 +6,22 @@ from polys import *
 FRAME_RATE = 60
 WIDTH = 1280
 HEIGHT = 720
+HEADER = 40
 SPEED_SHIP = 170
 SPEED_PLASMA = 400
 PLASMA_CD = 0.15
 
 main_batch = pyglet.graphics.Batch()
+
+
+def create_rectangle_hitbox(s: pyglet.sprite.Sprite):
+    h = Poly(0, 0)
+    h.add_point(0, 0)
+    h.add_point(0, s.height)
+    h.add_point(s.width, s.height)
+    h.add_point(s.width, 0)
+    h.move(s.x, s.y)
+    return h
 
 
 class GameWindow(pyglet.window.Window):
@@ -43,12 +54,7 @@ class GameWindow(pyglet.window.Window):
         self.player = pyglet.sprite.Sprite(self.image_player, x=100, y=HEIGHT // 2, batch=main_batch)
         self.player.vx = 0
         self.player.vy = 0
-        self.player.rect = Poly(0, 0)
-        self.player.rect.add_point(0, 0)
-        self.player.rect.add_point(0, self.player.height)
-        self.player.rect.add_point(self.player.width, self.player.height)
-        self.player.rect.add_point(self.player.width, 0)
-        self.player.rect.move(self.player.x, self.player.y)
+        self.player.hitbox = create_rectangle_hitbox(self.player)
         self.player.cooldown_plasma = PLASMA_CD
         self.player.projectiles = []
 
@@ -66,7 +72,9 @@ class GameWindow(pyglet.window.Window):
         # prepare batch
         # batch.add(self.player)
         # batch.add(self.label_debug)
-        self.player.rect.add_to_batch(frame_batch)
+        self.player.hitbox.add_to_batch(frame_batch)
+        for p in self.player.projectiles:
+            p.hitbox.add_to_batch(frame_batch)
 
         # render batch
         main_batch.draw()
@@ -116,7 +124,12 @@ class GameWindow(pyglet.window.Window):
 
         self.player.x += self.player.vx * dt * SPEED_SHIP
         self.player.y += self.player.vy * dt * SPEED_SHIP
-        self.player.rect.move(self.player.x, self.player.y)
+        if self.player.x < 0: self.player.x = 0
+        if self.player.y < 0: self.player.y = 0
+        if self.player.y + self.player.height > HEIGHT - HEADER:
+            self.player.y = HEIGHT - HEADER - self.player.height
+
+        self.player.hitbox.move(self.player.x, self.player.y)
 
         # update shooting
         self.player.cooldown_plasma -= dt
@@ -128,8 +141,10 @@ class GameWindow(pyglet.window.Window):
                 y=self.player.y + self.player.height // 2,
                 batch=main_batch
             )
+            new_projectile.hitbox = create_rectangle_hitbox(new_projectile)
             new_projectile.velocity_x = SPEED_PLASMA
             self.player.projectiles.append(new_projectile)
+
 
 
 if __name__ == "__main__":

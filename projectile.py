@@ -11,3 +11,4 @@ class Projectile(pyglet.sprite.Sprite):
     def update(self, dt):
         self.x += self.velocity_x * dt
         self.y += self.velocity_y * dt
+        self.hitbox.move(self.x, self.y)
