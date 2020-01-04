@@ -1,4 +1,5 @@
 import pyglet
+import random
 from pyglet.window import key
 from projectile import Projectile
 from polys import *
@@ -9,9 +10,13 @@ HEIGHT = 720
 HEADER = 40
 SPEED_SHIP = 170
 SPEED_PLASMA = 400
+SPEED_GALAXY = -50
 PLASMA_CD = 0.15
 
 main_batch = pyglet.graphics.Batch()
+
+bg_layer_1 = pyglet.graphics.OrderedGroup(0)
+fg_layer_1 = pyglet.graphics.OrderedGroup(1)
 
 
 def create_rectangle_hitbox(s: pyglet.sprite.Sprite):
@@ -50,13 +55,20 @@ class GameWindow(pyglet.window.Window):
         # setup player
         self.image_player = pyglet.image.load('van.png')
         self.image_plasma = pyglet.image.load('plasma.png')
+        self.image_galaxy = pyglet.image.load('galaxy.png')
 
-        self.player = pyglet.sprite.Sprite(self.image_player, x=100, y=HEIGHT // 2, batch=main_batch)
+        self.player = pyglet.sprite.Sprite(self.image_player, x=100, y=HEIGHT // 2, batch=main_batch, group=fg_layer_1)
         self.player.vx = 0
         self.player.vy = 0
         self.player.hitbox = create_rectangle_hitbox(self.player)
         self.player.cooldown_plasma = PLASMA_CD
         self.player.projectiles = []
+        self.galaxies = []
+        for i in range(3):
+            g = pyglet.sprite.Sprite(self.image_galaxy, x=random.randint(200,1200), y=random.randint(100,800), batch = main_batch, group=bg_layer_1)
+            g.vx = SPEED_GALAXY
+            self.galaxies.append(g)
+
 
     def on_draw(self):
         frame_batch = pyglet.graphics.Batch()
@@ -86,7 +98,20 @@ class GameWindow(pyglet.window.Window):
     def update(self, dt):
         # update player
         self.update_player(dt)
+        self.update_projectiles(dt)
+        self.update_background(dt)
 
+    def update_background(self, dt):
+        for g in self.galaxies:
+            g.x += g.vx * dt
+
+            if g.x < -150:
+                g.x = 1300
+                g.y = random.randint(100,600)
+
+
+
+    def update_projectiles(self, dt):
         # update player projectiles and remove projectiles out of bounds
         inbound_projectiles = []
         for p in self.player.projectiles:
@@ -139,7 +164,8 @@ class GameWindow(pyglet.window.Window):
                 self.image_plasma,
                 x=self.player.x + self.player.width,
                 y=self.player.y + self.player.height // 2,
-                batch=main_batch
+                batch=main_batch,
+                group=fg_layer_1
             )
             new_projectile.hitbox = create_rectangle_hitbox(new_projectile)
             new_projectile.velocity_x = SPEED_PLASMA
