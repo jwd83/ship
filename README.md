@@ -1,3 +1,5 @@
+![](https://github.com/jwd83/ship/raw/master/title.jpg)
+
 # Van Alien
 
 Side scrolling spaceship game made for fun.
