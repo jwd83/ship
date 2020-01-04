@@ -13,6 +13,9 @@ SPEED_PLASMA = 400
 SPEED_GALAXY = -30
 SPEED_STAR = -70
 PLASMA_CD = 0.15
+COUNT_STARS = 400
+COUNT_GALAXIES = 8
+SCALE_STARS = 0.25
 
 main_batch = pyglet.graphics.Batch()
 
@@ -58,6 +61,7 @@ class GameWindow(pyglet.window.Window):
         self.image_player = pyglet.image.load('van.png')
         self.image_plasma = pyglet.image.load('plasma.png')
         self.image_galaxy = pyglet.image.load('galaxy.png')
+        self.image_star_white = pyglet.image.load('star-white.png')
         self.image_star_red = pyglet.image.load('star-red.png')
 
         self.player = pyglet.sprite.Sprite(self.image_player, x=100, y=HEIGHT // 2, batch=main_batch, group=fg_layer_1)
@@ -68,14 +72,24 @@ class GameWindow(pyglet.window.Window):
         self.player.projectiles = []
         self.galaxies = []
         self.stars = []
-        for i in range(8):
-            g = pyglet.sprite.Sprite(self.image_galaxy, x=random.randint(0, 1300), y=random.randint(0, 600), batch=main_batch, group=bg_layer_1)
+        for i in range(COUNT_GALAXIES):
+            g = pyglet.sprite.Sprite(self.image_galaxy, x=random.randint(0, WIDTH + self.image_galaxy.width * 2), y=random.randint(0, 600), batch=main_batch, group=bg_layer_1)
             g.vx = SPEED_GALAXY
+            g.rotation = random.randint(0, 359)
             self.galaxies.append(g)
 
-        for i in range(50):
+        for i in range(COUNT_STARS):
+            g = pyglet.sprite.Sprite(self.image_star_white, x=random.randint(0, 1300), y=random.randint(0, 660), batch=main_batch, group=bg_layer_2)
+            star_nearness = random.uniform(0.8, 1.0)
+            g.vx = SPEED_STAR * star_nearness
+            g.scale = SCALE_STARS * star_nearness
+            self.stars.append(g)
+
+        for i in range(COUNT_STARS//10):
             g = pyglet.sprite.Sprite(self.image_star_red, x=random.randint(0, 1300), y=random.randint(0, 660), batch=main_batch, group=bg_layer_2)
-            g.vx = SPEED_STAR
+            star_nearness = random.uniform(0.7, 1.0)
+            g.vx = SPEED_STAR * star_nearness
+            g.scale = SCALE_STARS * star_nearness * star_nearness
             self.stars.append(g)
 
     def on_draw(self):
@@ -113,14 +127,15 @@ class GameWindow(pyglet.window.Window):
         for g in self.galaxies:
             g.x += g.vx * dt
 
-            if g.x < -150:
-                g.x = 1300
+            if g.x < -g.width:
+                g.x = WIDTH + g.width * 2
+                g.rotation = random.randint(0,359)
                 g.y = random.randint(0, 600)
 
         for g in self.stars:
             g.x += g.vx * dt
 
-            if g.x < -150:
+            if g.x < -g.width:
                 g.x = 1300
                 g.y = random.randint(0, 660)
 
@@ -163,6 +178,8 @@ class GameWindow(pyglet.window.Window):
         self.player.x += self.player.vx * dt * SPEED_SHIP
         self.player.y += self.player.vy * dt * SPEED_SHIP
         if self.player.x < 0: self.player.x = 0
+        if self.player.x + self.player.width > WIDTH:
+            self.player.x = WIDTH - self.player.width
         if self.player.y < 0: self.player.y = 0
         if self.player.y + self.player.height > HEIGHT - HEADER:
             self.player.y = HEIGHT - HEADER - self.player.height
