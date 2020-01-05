@@ -13,9 +13,9 @@ SPEED_PLASMA = 400
 SPEED_GALAXY = -30
 SPEED_STAR = -70
 PLASMA_CD = 0.15
-COUNT_STARS = 400
-COUNT_GALAXIES = 8
-SCALE_STARS = 0.25
+COUNT_STARS = 150
+COUNT_GALAXIES = 6
+SCALE_STARS = 0.55
 
 main_batch = pyglet.graphics.Batch()
 
@@ -73,23 +73,30 @@ class GameWindow(pyglet.window.Window):
         self.galaxies = []
         self.stars = []
         for i in range(COUNT_GALAXIES):
-            g = pyglet.sprite.Sprite(self.image_galaxy, x=random.randint(0, WIDTH + self.image_galaxy.width * 2), y=random.randint(0, 600), batch=main_batch, group=bg_layer_1)
-            g.vx = SPEED_GALAXY
+            xmin = int(i / COUNT_GALAXIES * WIDTH)
+            xmax = int((i+1) / COUNT_GALAXIES * WIDTH)
+
+            g = pyglet.sprite.Sprite(self.image_galaxy, x=random.randint(xmin, xmax), y=random.randint(0, 600), batch=main_batch, group=bg_layer_1)
+
+            nearness = random.uniform(0.2, 1.0)
+            g.vx = SPEED_GALAXY * nearness
+            g.scale *= nearness
+
             g.rotation = random.randint(0, 359)
             self.galaxies.append(g)
 
         for i in range(COUNT_STARS):
             g = pyglet.sprite.Sprite(self.image_star_white, x=random.randint(0, 1300), y=random.randint(0, 660), batch=main_batch, group=bg_layer_2)
-            star_nearness = random.uniform(0.8, 1.0)
-            g.vx = SPEED_STAR * star_nearness
-            g.scale = SCALE_STARS * star_nearness
+            nearness = random.uniform(0.4, 1.0)
+            g.vx = SPEED_STAR * nearness
+            g.scale = SCALE_STARS * nearness * nearness
             self.stars.append(g)
 
         for i in range(COUNT_STARS//10):
             g = pyglet.sprite.Sprite(self.image_star_red, x=random.randint(0, 1300), y=random.randint(0, 660), batch=main_batch, group=bg_layer_2)
-            star_nearness = random.uniform(0.7, 1.0)
-            g.vx = SPEED_STAR * star_nearness
-            g.scale = SCALE_STARS * star_nearness * star_nearness
+            nearness = random.uniform(0.4, 1.0)
+            g.vx = SPEED_STAR * nearness
+            g.scale = SCALE_STARS * nearness * nearness
             self.stars.append(g)
 
     def on_draw(self):
