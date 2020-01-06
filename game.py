@@ -13,8 +13,8 @@ SPEED_PLASMA = 400
 SPEED_GALAXY = -30
 SPEED_STAR = -70
 PLASMA_CD = 0.15
-COUNT_STARS = 150
-COUNT_GALAXIES = 6
+COUNT_STARS = 200
+COUNT_GALAXIES = 10
 SCALE_STARS = 0.55
 
 main_batch = pyglet.graphics.Batch()
@@ -57,14 +57,26 @@ class GameWindow(pyglet.window.Window):
         )
         self.debug_enable = True
 
-        # setup player
+        # load sprites
+        # player
         self.image_player = pyglet.image.load('van.png')
         self.image_plasma = pyglet.image.load('plasma.png')
-        self.image_galaxy = pyglet.image.load('galaxy.png')
+
+        # stars
         self.image_star_white = pyglet.image.load('star-white.png')
         self.image_star_red = pyglet.image.load('star-red.png')
         self.image_star_blue = pyglet.image.load('star-blue.png')
+
+        # galaxy/nebula
+        self.image_galaxy = pyglet.image.load('galaxy.png')
+        self.image_galaxy_white = pyglet.image.load('galaxy-white.png')
+        self.image_galaxy_blue = pyglet.image.load('galaxy-blue.png')
+        self.image_nebula_red = pyglet.image.load('nebula-red.png')
+        self.image_nebula_green = pyglet.image.load('nebula-green.png')
+        self.image_nebula_blue = pyglet.image.load('nebula-blue.png')
+
         self.player = pyglet.sprite.Sprite(self.image_player, x=100, y=HEIGHT // 2, batch=main_batch, group=fg_layer_1)
+        # self.player.scale = 1.5
         self.player.vx = 0
         self.player.vy = 0
         self.player.hitbox = create_rectangle_hitbox(self.player)
@@ -72,23 +84,39 @@ class GameWindow(pyglet.window.Window):
         self.player.projectiles = []
         self.galaxies = []
         self.stars = []
+
+        gn_images = [
+            self.image_nebula_red,
+            self.image_nebula_blue,
+            self.image_nebula_green,
+            self.image_galaxy_white,
+            self.image_galaxy_blue
+        ]
+
         for i in range(COUNT_GALAXIES):
             xmin = int(i / COUNT_GALAXIES * WIDTH)
             xmax = int((i+1) / COUNT_GALAXIES * WIDTH)
+            #
+            # c = random.uniform(0.0, 1.0)
+            # if c > 0.5:
+            #     galaxy_img = self.image_galaxy_white
+            # else:
+            #     galaxy_img = self.image_nebula_red
 
-            g = pyglet.sprite.Sprite(self.image_galaxy, x=random.randint(xmin, xmax), y=random.randint(0, 600),
+            galaxy_img = random.choice(gn_images)
+            g = pyglet.sprite.Sprite(galaxy_img, x=random.randint(xmin, xmax), y=random.randint(0, 600),
                                      batch=main_batch, group=bg_layer_1)
 
-            nearness = random.uniform(0.2, 1.0)
+            nearness = random.uniform(0.7, 1.0)
             g.vx = SPEED_GALAXY * nearness
-            g.scale *= nearness
+            # g.scale *= nearness
 
             g.rotation = random.randint(0, 359)
             self.galaxies.append(g)
 
         for i in range(COUNT_STARS):
-            c = random.uniform(0.0, 1.0)
 
+            c = random.uniform(0.0, 1.0)
             if c > 0.9:
                 star_img = self.image_star_blue
             elif c > 0.8:
@@ -124,7 +152,7 @@ class GameWindow(pyglet.window.Window):
 
         # render batch
         main_batch.draw()
-        frame_batch.draw()
+        # frame_batch.draw()
 
         # clean up the debugging string
         self.debug_str = ""
