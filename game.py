@@ -63,7 +63,7 @@ class GameWindow(pyglet.window.Window):
         self.image_galaxy = pyglet.image.load('galaxy.png')
         self.image_star_white = pyglet.image.load('star-white.png')
         self.image_star_red = pyglet.image.load('star-red.png')
-
+        self.image_star_blue = pyglet.image.load('star-blue.png')
         self.player = pyglet.sprite.Sprite(self.image_player, x=100, y=HEIGHT // 2, batch=main_batch, group=fg_layer_1)
         self.player.vx = 0
         self.player.vy = 0
@@ -76,7 +76,8 @@ class GameWindow(pyglet.window.Window):
             xmin = int(i / COUNT_GALAXIES * WIDTH)
             xmax = int((i+1) / COUNT_GALAXIES * WIDTH)
 
-            g = pyglet.sprite.Sprite(self.image_galaxy, x=random.randint(xmin, xmax), y=random.randint(0, 600), batch=main_batch, group=bg_layer_1)
+            g = pyglet.sprite.Sprite(self.image_galaxy, x=random.randint(xmin, xmax), y=random.randint(0, 600),
+                                     batch=main_batch, group=bg_layer_1)
 
             nearness = random.uniform(0.2, 1.0)
             g.vx = SPEED_GALAXY * nearness
@@ -86,18 +87,22 @@ class GameWindow(pyglet.window.Window):
             self.galaxies.append(g)
 
         for i in range(COUNT_STARS):
-            g = pyglet.sprite.Sprite(self.image_star_white, x=random.randint(0, 1300), y=random.randint(0, 660), batch=main_batch, group=bg_layer_2)
+            c = random.uniform(0.0, 1.0)
+
+            if c > 0.9:
+                star_img = self.image_star_blue
+            elif c > 0.8:
+                star_img = self.image_star_red
+            else:
+                star_img = self.image_star_white
+
+            g = pyglet.sprite.Sprite(star_img, x=random.randint(0, 1300), y=random.randint(0, 660),
+                                     batch=main_batch, group=bg_layer_2)
             nearness = random.uniform(0.4, 1.0)
             g.vx = SPEED_STAR * nearness
             g.scale = SCALE_STARS * nearness * nearness
             self.stars.append(g)
 
-        for i in range(COUNT_STARS//10):
-            g = pyglet.sprite.Sprite(self.image_star_red, x=random.randint(0, 1300), y=random.randint(0, 660), batch=main_batch, group=bg_layer_2)
-            nearness = random.uniform(0.4, 1.0)
-            g.vx = SPEED_STAR * nearness
-            g.scale = SCALE_STARS * nearness * nearness
-            self.stars.append(g)
 
     def on_draw(self):
         frame_batch = pyglet.graphics.Batch()
