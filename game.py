@@ -12,7 +12,7 @@ SPEED_SHIP = 170
 SPEED_PLASMA = 400
 SPEED_GALAXY = -30
 SPEED_STAR = -70
-PLASMA_CD = 0.25
+PLASMA_CD = 0.3
 COUNT_STARS = 200
 COUNT_GALAXIES = 10
 SCALE_STARS = 0.55
@@ -74,6 +74,10 @@ class GameWindow(pyglet.window.Window):
         self.image_nebula_red = pyglet.image.load('nebula-red.png')
         self.image_nebula_green = pyglet.image.load('nebula-green.png')
         self.image_nebula_blue = pyglet.image.load('nebula-blue.png')
+
+        self.sfx_plasma = pyglet.media.load('plasma.wav', streaming=False)
+
+
 
         self.player = pyglet.sprite.Sprite(self.image_player, x=100, y=HEIGHT // 2, batch=main_batch, group=fg_layer_1)
         # self.player.scale = 1.5
@@ -240,6 +244,7 @@ class GameWindow(pyglet.window.Window):
             new_projectile.hitbox = create_rectangle_hitbox(new_projectile)
             new_projectile.velocity_x = SPEED_PLASMA
             self.player.projectiles.append(new_projectile)
+            self.sfx_plasma.play()
 
 
 
