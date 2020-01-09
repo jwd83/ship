@@ -76,6 +76,8 @@ class GameWindow(pyglet.window.Window):
         self.image_nebula_blue = pyglet.image.load('nebula-blue.png')
 
         self.sfx_plasma = pyglet.media.load('plasma.wav', streaming=False)
+        self.sin = pyglet.media.procedural.Sine(0.05, 2200)
+        self.sin.play()
 
 
 
