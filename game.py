@@ -13,7 +13,7 @@ SPEED_PLASMA = 400
 SPEED_GALAXY = -30
 SPEED_STAR = -70
 PLASMA_CD = 0.3
-COUNT_STARS = 200
+COUNT_STARS = 100
 COUNT_GALAXIES = 10
 SCALE_STARS = 0.55
 
@@ -75,11 +75,11 @@ class GameWindow(pyglet.window.Window):
         self.image_nebula_green = pyglet.image.load('nebula-green.png')
         self.image_nebula_blue = pyglet.image.load('nebula-blue.png')
 
+        self.image_go_subwayo = pyglet.image.load('go-subwayo.png')
+
         self.sfx_plasma = pyglet.media.load('plasma.wav', streaming=False)
         self.sin = pyglet.media.procedural.Sine(0.05, 2200)
         self.sin.play()
-
-
 
         self.player = pyglet.sprite.Sprite(self.image_player, x=100, y=HEIGHT // 2, batch=main_batch, group=fg_layer_1)
         # self.player.scale = 1.5
@@ -90,6 +90,7 @@ class GameWindow(pyglet.window.Window):
         self.player.projectiles = []
         self.galaxies = []
         self.stars = []
+        self.enemies = []
 
         gn_images = [
             self.image_nebula_red,
@@ -98,6 +99,12 @@ class GameWindow(pyglet.window.Window):
             self.image_galaxy_white,
             self.image_galaxy_blue
         ]
+
+        for i in range(10):
+            g = pyglet.sprite.Sprite(self.image_go_subwayo, x=(2+i) * WIDTH, y=random.randint(0, 600), batch=main_batch,
+                                     group=fg_layer_1)
+            g.vx = -100
+            self.enemies.append(g)
 
         for i in range(COUNT_GALAXIES):
             xmin = int(i / COUNT_GALAXIES * WIDTH)
@@ -168,6 +175,11 @@ class GameWindow(pyglet.window.Window):
         self.update_player(dt)
         self.update_projectiles(dt)
         self.update_background(dt)
+        self.update_enemies(dt)
+
+    def update_enemies(self, dt):
+        for g in self.enemies:
+            g.x += g.vx * dt
 
     def update_background(self, dt):
         for g in self.galaxies:
